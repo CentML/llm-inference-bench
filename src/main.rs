@@ -152,7 +152,7 @@ fn tokenize(
         InputType::File(s) => {
             let mut target_len: usize = len;
             let mut return_string: String = String::new();
-            for _ in 0..num_trials {
+            for trial in 0..num_trials {
                 let encoding: tokenizers::Encoding = tokenizer
                     .encode(s.as_str(), false)
                     .expect("Failed to encode");
@@ -166,8 +166,9 @@ fn tokenize(
                     .len();
                 if verbose {
                     println!(
-                        "{} Target Prompt Length: {}, Achieved Prompt Length: {}",
+                        "{} Trial: {} Target Prompt Length: {}, Achieved Prompt Length: {}",
                         "INFO".blue().bold(),
+                        trial,
                         len.to_string().green().bold(),
                         check_len.to_string().green().bold()
                     );
@@ -188,7 +189,7 @@ fn tokenize(
                 ids.push(rand::random::<u32>() % vocab_size);
             }
             let mut return_string: String = String::new();
-            for _ in 0..num_trials {
+            for trial in 0..num_trials {
                 return_string = tokenizer
                     .decode(&ids, false)
                     .expect("Failed to decode random input");
@@ -199,8 +200,9 @@ fn tokenize(
                     .len();
                 if verbose {
                     println!(
-                        "{} Target Length: {}, Achieved Length: {}",
+                        "{} Trial: {} Target Prompt Length: {}, Achieved Prompt Length: {}",
                         "INFO".blue().bold(),
+                        trial,
                         len.to_string().green().bold(),
                         check_len.to_string().green().bold()
                     );
@@ -341,7 +343,7 @@ async fn send_req(
 
     let resp: reqwest::Response = match body {
         Framework::Cserve(body) => client
-            .post(format!("http://{hostname}:{port}/api/cserve/generate"))
+            .post(format!("http://{hostname}:{port}/cserve/v1/generate"))
             .headers(headers)
             .json(&body)
             .send()

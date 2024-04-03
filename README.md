@@ -1,7 +1,7 @@
 # Cserve Lightweight Benchmarker
 This benchmark operates entirely external to any serving framework, and can easily be extended and modified. Provides a variety of statistics and profiling modes. It is intended to be a standalone tool for precise statistically significant benchmarking with a particular input/output distribution. Each request consists of a single prompt and single decode. 
 
-This benchmark basically sends out as many requests as you specify, with the time that request hits the model server based on a distribution that you specify.
+This benchmark basically sends out as many requests as you specify, with the length of the request and time that request hits the model server based on distributions that you specify.
 
 ### Installation
 1) Install rust: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and restart the shell. See: https://www.rust-lang.org/tools/install
@@ -60,6 +60,9 @@ We annotate interesting points to note.
 
 
 At point 1, R1 starts, while at point 2, R2 starts, i.e. is sent from the benchmarker. This will depend entirely on the `--request-rate` and `--request-distribution` that we have set. Point 3 represents when R2 has finished and returned its output completely.
+
 Point 4 represents when R1 has finished and returned its output completely. The `total_time` that is returned here will be time 4 while the throughput will be time 4 over the number of requests.
+
 We are also interested in the latencies of each request, which is what the other 3 output statistics in **Output Parameters** depend on. This is time 3 less time 2, and time 4 less time 1. This latency will depend on how the inference engine we are trying to benchmark handles requests, how performant it is, as well as the `--prompt-` and `--decode-` parameters that we specify in the input. It may also depend on the `--text-file` parameter.
+
 If we set `--num-samples` to a number other than 1, we will run the above experiment that number of times. All distributions will be sampled independently between statistics. This gives us greater confidence in our results. This is to say, if `--num-samples` is 3, we will send R1 and R2 out for a first time, gather statistics, send R1 and R2 out for a second time (the times 1, 2, 3, 4 could be different this time due to the random distributions parametrized by `--request-distribution`, `--prompt-`, `--decode-` being sampled again, as well as random effects) gather statistics, and send R1 and R2 a third time, and gather statistics. Then, all statstics will be *averaged* over `--num-samples` in the output. This is why `n` is output as well to note that the other statistics were gathered by an average over these number of trials.

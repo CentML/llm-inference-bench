@@ -46,7 +46,11 @@ This benchmark basically sends out as many requests as you specify, with the tim
 * `avg_latency_per_output_token`: The average time for one output token to complete. This is the computed by taking each request time and averaging over the number of output tokens, then averaging over all requests.
 
 ### Examples
-We might send a request out with `--num-requests` as 2 and `--num-samples` as 1 for examples. We might then end up with the following situation:
+Consider a situation where we run our benchmarker with `--num-requests` as 2 and `--num-samples` as 1. We might then end up with the following scenario where \* represents time a request spends in the inference engine, and \- represents time when the request is not in the engine.
 
-R1 --********************************----
-R2 -------------****************---------
+R1 --********************************---- \
+R2 -------------****************--------- \
+     1          2              3    4
+
+We annotate interesting points to note.
+At point 1, R1 starts, while at point 2, R2 starts, i.e. is sent from the benchmarker. This will depend on the `--request-rate` and `--request-distribution` that we have set.

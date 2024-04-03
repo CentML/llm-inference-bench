@@ -41,16 +41,25 @@ This benchmark basically sends out as many requests as you specify, with the tim
 ### Output Parameters
 * `n`: This is the total number of experiments run. The exact same as `--num-samples` above.
 * `total_time`: The total time for all requests to complete *averaged* over `n`.
+* `throughput`: Number of requests processed per second.
 * `avg_latency`: The average time for one request to complete end-to-end, that is between sending the request out and receiving the response with all output tokens in full.
 * `avg_latency_per_token`: The average time for one token to complete. This is computed by taking each request time averaged over the number of prompt tokens + number of output tokens, then averaging this over all requests.
 * `avg_latency_per_output_token`: The average time for one output token to complete. This is the computed by taking each request time and averaging over the number of output tokens, then averaging over all requests.
+* `--note`: The exact note specified by `--benchmark-note` in the input. Useful to annotate or comment on experiments and have it noted in the output.
 
 ### Examples
 Consider a situation where we run our benchmarker with `--num-requests` as 2 and `--num-samples` as 1. We might then end up with the following scenario where \* represents time a request spends in the inference engine, and \- represents time when the request is not in the engine.
 
+```
 R1 --********************************---- \
 R2 -------------****************--------- \
      1          2              3    4
+```
 
 We annotate interesting points to note.
-At point 1, R1 starts, while at point 2, R2 starts, i.e. is sent from the benchmarker. This will depend on the `--request-rate` and `--request-distribution` that we have set.
+
+
+At point 1, R1 starts, while at point 2, R2 starts, i.e. is sent from the benchmarker. This will depend entirely on the `--request-rate` and `--request-distribution` that we have set. Point 3 represents when R2 has finished and returned its output completely.
+Point 4 represents when R1 has finished and returned its output completely. The `total_time` that is returned here will be time 4 while the throughput will be time 4 over the number of requests.
+We are also interested in the latencies of each request, which is what the other 3 output statistics in **Output Parameters** depend on. This is time 3 less time 2, and time 4 less time 1. This latency will depend on how the inference engine we are trying to benchmark handles requests, how performant it is, as well as the `--prompt-` and `--decode-` parameters that we specify in the input. It may also depend on the `--text-file` parameter.
+If we set `--num-samples` to a number other than 1, we will run the above experiment that number of times. All distributions will be sampled independently between statistics. This gives us greater confidence in our results. This is to say, if `--num-samples` is 3, we will send R1 and R2 out for a first time, gather statistics, send R1 and R2 out for a second time (the times 1, 2, 3, 4 could be different this time due to the random distributions parametrized by `--request-distribution`, `--prompt-`, `--decode-` being sampled again, as well as random effects) gather statistics, and send R1 and R2 a third time, and gather statistics. Then, all statstics will be *averaged* over `--num-samples` in the output. This is why `n` is output as well to note that the other statistics were gathered by an average over these number of trials.

@@ -51,8 +51,8 @@ This benchmark basically sends out as many requests as you specify, with the tim
 Consider a situation where we run our benchmarker with `--num-requests` as 2 and `--num-samples` as 1. We might then end up with the following scenario where \* represents time a request spends in the inference engine, and \- represents time when the request is not in the engine.
 
 ```
-R1 --********************************---- \
-R2 -------------****************--------- \
+R1 --********************************----
+R2 -------------****************---------
      1          2              3    4
 ```
 

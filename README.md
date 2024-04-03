@@ -1,6 +1,8 @@
 # Cserve Lightweight Benchmarker
 This benchmark operates entirely external to any serving framework, and can easily be extended and modified. Provides a variety of statistics and profiling modes. It is intended to be a standalone tool for precise statistically significant benchmarking with a particular input/output distribution. Each request consists of a single prompt and single decode. 
 
+This benchmark basically sends out as many requests as you specify, with the time that request hits the model server based on a distribution that you specify.
+
 ### Installation
 1) Install rust: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and restart the shell. See: https://www.rust-lang.org/tools/install
 2) Run `cargo build` in `benchmarks/lightweight_benchmark`
@@ -12,22 +14,22 @@ This benchmark operates entirely external to any serving framework, and can easi
 ### Arguments and Feature List
 * `--help`: Find all of the options below.
 * `--verbose`: Enables verbose printing of various INFOs.
-* `--output-file`: Specify a filename for the output json. Otherwise, prints to the standard out.
+* `--output-file`: Specify a filename for the output json. Otherwise, prints to stdout.
 * `--benchmark-note`: Spcify a note (string) to include in the output json. Default: empty.
 * `--config-file`: This is an alternative way of passing in all the arguments below. They are specified in camelCase (e.g. `--request-rate` becomes `requestRate`). If both a config file and a cli argument is specified for the same parameter, the cli argument takes precedence. This makes it possible to use a config file to specify your own defaults.
-* `--text-file`: Specifies a text file to use as prompt input. Useful for speculative decoding type tasks.
-* `--tokenizer-name`: Name of the model you intend to use. This helps tokenize an exact number of tokens for the prompt.
+* `--text-file`: Specifies a text file to use as prompt input. This text file should consist of a single line. This line should contain as many tokens as necessary for your requests. Useful for speculative decoding type tasks.
+* `--tokenizer-name`: Huggingface name of the model you intend to use. This helps tokenize an exact number of tokens for the prompt.
 * `--hostname`: Specify the hostname where the endpoint is located. Default: localhost 
 * `--port`: Specify the port on hostname where the endpoint is located. Default: 8080
 * `--framework`: Specify the framework. Can be one of:
     * vllm
     * cserve
-* `--request-distribution`: Specify the distribution for input requests to arrive. Can be one of:
-    * poisson (with $request_rate$)
-    * even (Non-random wherecrequests arrive every $1/request_rate$)
-    * same (Start at 0). Default.
-* `--num-samples`: Number of times to run the experiment. Default: 1.
+* `--request-distribution`: Specify the distribution for input requests to arrive. This controls how fast requests reach the inference endpoint. Can be one of:
+    * poisson (with $request\_rate$).
+    * even (Non-random where requests arrive every $1/request\_rate$ seconds). That is, $request\_rate$ number of requests reach the inference endpoint every second, evenly spaced.
+    * same (Start at 0). This means the benchmarker sends all requests at the exact same time right at the beginning. Default.
 * `--num-requests`: Number of requests to launch per trial. Default: 1.
+* `--num-samples`: Number of times to run the experiment. This basically is the number of trials to increase statistical confidence in the benchmark results. Default: 1.
 * `--use-beam-search`: Whether to use beam search or not. Default: False.
 * `--best-of`: Beam width, when beam search is on. Otherwise, number of output sequences produced from prompt. Default: 1.
 * `--request-rate`: Request rate used in the request distribution. Default: 1.0
@@ -35,3 +37,16 @@ This benchmark operates entirely external to any serving framework, and can easi
 * `--prompt-high`: The (exclusive) end of the range of the uniform distribution from which prompt lengths are sampled from.
 * `--decode-low`: The (inclusive) start of the range of the uniform distribution from which decode lengths are sampled from.
 * `--decode-high`: The (exclusive) end of the range of the uniform distribution from which decode lengths are sampled from.
+
+### Output Parameters
+* `n`: This is the total number of experiments run. The exact same as `--num-samples` above.
+* `total_time`: The total time for all requests to complete *averaged* over `n`.
+* `avg_latency`: The average time for one request to complete end-to-end, that is between sending the request out and receiving the response with all output tokens in full.
+* `avg_latency_per_token`: The average time for one token to complete. This is computed by taking each request time averaged over the number of prompt tokens + number of output tokens, then averaging this over all requests.
+* `avg_latency_per_output_token`: The average time for one output token to complete. This is the computed by taking each request time and averaging over the number of output tokens, then averaging over all requests.
+
+### Examples
+We might send a request out with `--num-requests` as 2 and `--num-samples` as 1 for examples. We might then end up with the following situation:
+
+R1 --********************************----
+R2 -------------****************---------

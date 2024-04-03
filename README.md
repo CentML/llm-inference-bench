@@ -26,7 +26,7 @@ This benchmark basically sends out as many requests as you specify, with the len
     * cserve
 * `--request-distribution`: Specify the distribution for input requests to arrive. This controls how fast requests reach the inference endpoint. Can be one of:
     * poisson (with $request\_rate$).
-    * even (Non-random where requests arrive every $1/request\_rate$ seconds). That is, $request\_rate$ number of requests reach the inference endpoint every second, evenly spaced.
+    * even (Non-random where requests arrive every $1/request \textunderscore rate$ seconds). That is, $request \textunderscore rate$ number of requests reach the inference endpoint every second, evenly spaced.
     * same (Start at 0). This means the benchmarker sends all requests at the exact same time right at the beginning. Default.
 * `--num-requests`: Number of requests to launch per trial. Default: 1.
 * `--num-samples`: Number of times to run the experiment. This basically is the number of trials to increase statistical confidence in the benchmark results. Default: 1.

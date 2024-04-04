@@ -1,4 +1,4 @@
-# Cserve Lightweight Benchmarker
+# CServe Lightweight Benchmarker
 This benchmark operates entirely external to any serving framework, and can easily be extended and modified. Provides a variety of statistics and profiling modes. It is intended to be a standalone tool for precise statistically significant benchmarking with a particular input/output distribution. Each request consists of a single prompt and single decode. 
 
 This benchmark basically sends out as many requests as you specify, with the length of the request and time that request hits the model server based on distributions that you specify.
@@ -25,7 +25,7 @@ This benchmark basically sends out as many requests as you specify, with the len
     * vllm
     * cserve
 * `--request-distribution`: Specify the distribution for input requests to arrive. This controls how fast requests reach the inference endpoint. Can be one of:
-    * poisson (with $request\_rate$).
+    * poisson (with $request \textunderscore rate$).
     * even (Non-random where requests arrive every $1/request \textunderscore rate$ seconds). That is, $request \textunderscore rate$ number of requests reach the inference endpoint every second, evenly spaced.
     * same (Start at 0). This means the benchmarker sends all requests at the exact same time right at the beginning. Default.
 * `--num-requests`: Number of requests to launch per trial. Default: 1.
